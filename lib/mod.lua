@@ -39,12 +39,12 @@ local my_midi = {
 }
 function my_midi:send(data) end
 function my_midi:note_on(note, vel, ch)
-    if ch == 1 then
+    if ch >= 1 and ch <= 4 then
         if not channel_is_set_up then
             print("nbout received note_on before initialization")
             return
         end
-        local p = params:lookup_param("nbout_chan_1"):get_player()
+        local p = params:lookup_param("nbout_chan_" .. ch):get_player()
         -- some sequencers (e.g. jala) seem to send nil for vel.
         -- assume they want a default velocity
         if vel == nil then
@@ -54,12 +54,12 @@ function my_midi:note_on(note, vel, ch)
     end
 end
 function my_midi:note_off(note, vel, ch)
-    if ch == 1 then
+    if ch >= 1 and ch <= 4 then
         if not channel_is_set_up then
-            print("nbout received note_on before initialization")
+            print("nbout received note_off before initialization")
             return
         end
-        local p = params:lookup_param("nbout_chan_1"):get_player()
+        local p = params:lookup_param("nbout_chan_" .. ch):get_player()
         p:note_off(note)
     end
 end
@@ -67,12 +67,12 @@ function my_midi:pitchbend(val, ch)
     -- TODO
 end
 function my_midi:cc(cc, val, ch)
-    if ch == 1 and cc == 72 then
+    if ch >= 1 and ch <= 4 and cc == 72 then
         if not channel_is_set_up then
-            print("nbout received note_on before initialization")
+            print("nbout received cc before initialization")
             return
         end
-        local p = params:lookup_param("nbout_chan_1"):get_player()
+        local p = params:lookup_param("nbout_chan_" .. ch):get_player()
         p:modulate(val/127)
     end
 end
@@ -141,6 +141,9 @@ end)
 mod.hook.register("script_post_init", "nbout post init", function()
     params:add_separator("nbout")
     nb:add_param("nbout_chan_1", "nb midi ch 1")
+    nb:add_param("nbout_chan_2", "nb midi ch 2")
+    nb:add_param("nbout_chan_3", "nb midi ch 3")
+    nb:add_param("nbout_chan_4", "nb midi ch 4")
     nb:add_player_params()
     channel_is_set_up = true
 end)
